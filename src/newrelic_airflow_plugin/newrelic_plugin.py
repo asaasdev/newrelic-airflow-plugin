@@ -16,6 +16,7 @@ import atexit
 import logging
 import os
 import threading
+from datetime import timedelta
 
 from airflow.plugins_manager import AirflowPlugin
 from newrelic_telemetry_sdk import Harvester as _Harvester
@@ -92,11 +93,13 @@ class NewRelicStatsLogger(object):
     def timing(cls, stat, dt):
         value = None
         tags = None
-        try:
-            value = dt.microseconds
+
+        if isinstance(dt, timedelta):
+            value = dt / timedelta(microseconds=1)
             tags = {"units": "microseconds"}
-        except AttributeError:
+        else:
             value = float(dt)
+
         harvester = cls.harvester()
         harvester.batch.record_gauge(stat, value, tags=tags)
         harvester.send_for_metric(stat)
