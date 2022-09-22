@@ -95,7 +95,7 @@ class NewRelicStatsLogger(object):
         tags = None
 
         if isinstance(dt, timedelta):
-            value = dt / timedelta(microseconds=1)
+            value = (dt.seconds * 1000000) + dt.microseconds
             tags = {"units": "microseconds"}
         else:
             value = float(dt)
