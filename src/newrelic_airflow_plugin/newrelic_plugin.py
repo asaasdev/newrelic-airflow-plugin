@@ -22,7 +22,8 @@ from airflow.plugins_manager import AirflowPlugin
 from airflow import stats as airflow_stats
 from newrelic_telemetry_sdk import Harvester as _Harvester
 from newrelic_telemetry_sdk import MetricBatch, MetricClient
-from statsd.client import timer as statsd_timer
+
+from src.newrelic_airflow_plugin.timer import Timer
 
 _logger = logging.getLogger(__name__)
 
@@ -113,7 +114,7 @@ class NewRelicStatsLogger(object):
             return airflow_stats.Timer()    
 
         return airflow_stats.Timer(
-            statsd_timer.Timer(
+            Timer(
                 NewRelicStatsLogger,
                 stat,
             ),
