@@ -19,8 +19,10 @@ import threading
 from datetime import timedelta
 
 from airflow.plugins_manager import AirflowPlugin
+from airflow import stats as airflow_stats
 from newrelic_telemetry_sdk import Harvester as _Harvester
 from newrelic_telemetry_sdk import MetricBatch, MetricClient
+from statsd.client import timer as statsd_timer
 
 _logger = logging.getLogger(__name__)
 
@@ -104,11 +106,26 @@ class NewRelicStatsLogger(object):
         harvester.batch.record_gauge(stat, value, tags=tags)
         harvester.send_for_metric(stat)
 
+    @classmethod
+    def timer(cls, stat, *args, **kwargs):
+        """Timer metric that can be cancelled"""
+        return airflow_stats.Timer(
+            statsd_timer.Timer(
+                NewRelicStatsLogger,
+                stat,
+            ),
+        )
+
 
 class NewRelicStatsPlugin(AirflowPlugin):
     name = "NewRelicStatsPlugin"
     patched = False
-    patched_attrs = ("incr", "gauge", "timing")
+    patched_attrs = (
+        "incr",
+        "gauge",
+        "timing",
+        "timer",
+    )
 
     @classmethod
     def validate(cls):
