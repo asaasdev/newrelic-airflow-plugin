@@ -107,8 +107,11 @@ class NewRelicStatsLogger(object):
         harvester.send_for_metric(stat)
 
     @classmethod
-    def timer(cls, stat, *args, **kwargs):
+    def timer(cls, stat=None, *args, **kwargs):
         """Timer metric that can be cancelled"""
+        if not stat:
+            return airflow_stats.Timer()    
+
         return airflow_stats.Timer(
             statsd_timer.Timer(
                 NewRelicStatsLogger,
